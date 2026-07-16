@@ -11,6 +11,12 @@ dependencies = [
     "numpy>=2.4.6",
     "polars>=1.42.1",
     "pybit>=5.17.0",
+    "pyqtgraph>=0.14.0",
     "pyside6>=6.11.1",
     "qasync>=0.28.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
 ]
