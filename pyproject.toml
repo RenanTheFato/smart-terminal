@@ -1,0 +1,16 @@
+[project]
+name = "smart-finance"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "duckdb>=1.5.4",
+    "loguru>=0.7.3",
+    "numba>=0.66.0",
+    "numpy>=2.4.6",
+    "polars>=1.42.1",
+    "pybit>=5.17.0",
+    "pyside6>=6.11.1",
+    "qasync>=0.28.0",
+]
