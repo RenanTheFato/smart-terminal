@@ -60,7 +60,7 @@ class ByBitClient:
   # Websocket Connection
   def _connect_ws(self):
     try:
-      self._ws = WebSocket(channel_type="linear", testnet=self._testnet, ping_interval=20, ping_timeout=10, retires=10, restart_on_error=True)
+      self._ws = WebSocket(channel_type="linear", testnet=self._testnet, ping_interval=20, ping_timeout=10, retries=10, restart_on_error=True)
       self._ws.ticker_stream(symbol=self._symbol, callback=self._on_message)
       self._reconnect_delay = 5
       self.events.put({"type": "status", "connected": True, "message": "Connected" })
