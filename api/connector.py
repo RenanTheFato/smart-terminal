@@ -65,8 +65,9 @@ class ByBitClient:
     
 
   # Init Ticker Stream WS
-  def start_ticker_strem(self, symbol: str = "BTCUSDT"):
+  def start_ticker_strem(self, symbol: str = "BTCUSDT", interval: str = "3"):
     self._symbol = symbol
+    self._interval = interval
     self._should_run = True
     self._connect_ws()
 
@@ -83,6 +84,20 @@ class ByBitClient:
     if data:
       self.events.put({"type": "ticker", "data": data})
 
+  def _on_kline_message(self, message: dict):
+    for item in message.get("data", []):
+      self.events.put({
+        "type": "kline",
+        "confirm": item.get("confirm", False),
+        "candle": (
+          datetime.fromtimestamp(float(item["start"]) / 1000, tz=timezone.utc),
+          float(item["open"]),
+          float(item["high"]),
+          float(item["low"]),
+          float(item["close"]),
+        ),
+      })
+
   # Method to force reconnection
   def _schedule_reconnect(self):
     if not self._should_run:
@@ -95,8 +110,14 @@ class ByBitClient:
   # Websocket Connection
   def _connect_ws(self):
     try:
+      # Test Connection
       self._ws = WebSocket(channel_type="linear", testnet=self._testnet, ping_interval=20, ping_timeout=10, retries=10, restart_on_error=True)
       self._ws.ticker_stream(symbol=self._symbol, callback=self._on_message)
+      
+      # Candle OHLC Stream
+      if self._interval is not None:
+        self._ws.kline_stream(symbol=self._symbol, interval=self._interval, callback=self._on_kline_message)
+
       self._reconnect_delay = 5
       self.events.put({"type": "status", "connected": True, "message": "Connected" })
       logger.info(f"WS Connected - {self._symbol}")
