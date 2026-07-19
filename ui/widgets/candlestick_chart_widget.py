@@ -61,12 +61,12 @@ class _PriceAxisItem(pg.AxisItem):
 
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.acceptHoverEvents(True)
+    self.setAcceptHoverEvents(True)
 
   # Visual change from standard Qt
   def hoverEnterEvent(self, event):
     self.setCursor(Qt.CursorShape.SizeVerCursor)
-    super().hover_enter_event(event)
+    super().hoverEnterEvent(event)
 
   def hoverLeaveEvent(self, event):
     self.unsetCursor()
@@ -80,7 +80,7 @@ class _PriceAxisItem(pg.AxisItem):
     event.accept()
   
     # Vertical delta from drag start to frame finish
-    dif = event.screenPos() = event.lastScreenPos()
+    dif = event.screenPos() - event.lastScreenPos()
     scale = 1.004 ** dif.y()
 
     # Set anchor to the most recent candle
@@ -186,7 +186,7 @@ class CandlestickChartWidget(QWidget):
   # Set minimum interval between two load more requests
   MIN_REQUEST_INTERVAL_SECONDS = 1.0
 
-  def _on_x_range_changed(self, x_range):
+  def _on_x_range_changed(self, view_box, x_range):
     if self._loading_more or not self._candles:
       return
     if x_range[0] >= 20:
@@ -277,4 +277,4 @@ class CandlestickChartWidget(QWidget):
     )
 
     # Release guard to next scroll can make the request
-    self._loading_more(False)
+    self._loading_more = False
