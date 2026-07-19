@@ -30,9 +30,19 @@ class ByBitClient:
       return False
     
   # REST Get for Symbol Kline Data
-  def get_kline_data(self, symbol: str = "BTCUSDT", interval: str = "3"):
+  def get_kline_data(self, symbol: str = "BTCUSDT", interval: str = "3", end_time_ms: int | None = None, limit: int = 200):
     try:
-      kline_data = self._session.get_kline(category="linear", symbol=symbol, interval=interval)
+      params = {
+        "category": "linear",
+        "symbol": symbol,
+        "interval": interval,
+        "limit": limit
+      }
+
+      if end_time_ms is not None:
+        params["end"] = end_time_ms
+
+      kline_data = self._session.get_kline(**params)
       raw_candles = kline_data["result"]["list"]
 
       # Reverse Candles Data
@@ -47,7 +57,7 @@ class ByBitClient:
         for c in reversed(raw_candles)
       ]
 
-      logger.info(f"Kline Data Successfully Fetched. Symbol: {symbol}")
+      logger.info(f"Kline Data Successfully Fetched. Symbol: {symbol} ({len(candles)}) candles")
       return candles
     except Exception as e:
       logger.error(f"Error on try to fetch kline data from symbol {symbol}; Error: {e}")
@@ -94,4 +104,3 @@ class ByBitClient:
       logger.error(f"Error on try to Connect on WS: {e}")
       self.events.put({"type": "status", "connected": False, "message": str(e) })
       self._schedule_reconnect()
-
