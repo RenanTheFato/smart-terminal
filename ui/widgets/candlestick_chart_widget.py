@@ -51,7 +51,7 @@ class _PriceTagItem(pg.GraphicsObject):
     self.setZValue(1000)
     self._width = 70.0
     self._notch = 10.0
-    self._row_height = 19.0
+    self._row_height = 16.0
     self._color = pg.mkColor("#2ecc71")
     self._price_text = ""
     self._time_text = ""
@@ -149,6 +149,23 @@ class _PriceAxisItem(pg.AxisItem):
   # Visual change from standard Qt
   def tickStrings(self, values, scale, spacing):
     return[_format_price(v) for v in values]
+  def generateDrawSpecs(self, p):
+    specs = super().generateDrawSpecs(p)
+    if specs is None:
+      return specs
+    axisSpec, tickSpecs, textSpecs = specs
+
+    full_width = self.size().width()
+    centered_specs = [
+      (
+        QRectF(0, rect.y(), full_width, rect.height()),
+        (flags & ~Qt.AlignmentFlag.AlignLeft) | Qt.AlignmentFlag.AlignHCenter,
+         text,
+      )
+      for rect, flags, text in textSpecs
+    ]
+    return axisSpec, tickSpecs, centered_specs
+
   def hoverEnterEvent(self, event):
     self.setCursor(Qt.CursorShape.SizeVerCursor)
     super().hoverEnterEvent(event)
