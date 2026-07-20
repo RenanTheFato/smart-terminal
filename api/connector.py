@@ -22,7 +22,7 @@ class ByBitClient:
   # REST Connection
   def check_connection(self) -> bool:
     try: 
-      self._session.get_tickers(category="linear", symbol="BTCUSDT")
+      self._session.get_tickers(category="linear", symbol=self._symbol)
       logger.info(f"ByBit REST connected successfully")
       return True
     except Exception as e:
@@ -30,7 +30,7 @@ class ByBitClient:
       return False
     
   # REST Get for Symbol Kline Data
-  def get_kline_data(self, symbol: str = "BTCUSDT", interval: str = "3", end_time_ms: int | None = None, limit: int = 200):
+  def get_kline_data(self, symbol: str, interval: str, end_time_ms: int | None = None, limit: int = 200):
     try:
       params = {
         "category": "linear",
@@ -65,7 +65,7 @@ class ByBitClient:
     
 
   # Init Ticker Stream WS
-  def start_ticker_strem(self, symbol: str = "BTCUSDT", interval: str = "3"):
+  def start_ticker_strem(self, symbol: str, interval: str):
     self._symbol = symbol
     self._interval = interval
     self._should_run = True
