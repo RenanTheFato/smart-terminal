@@ -36,6 +36,9 @@ class MainWindow(QMainWindow):
     self.setMinimumSize(960, 540)
     self.bybit_client = ByBitClient()
     self._last_history_end_ms: int | None = None
+    # Universal params, prevent wrong symbol and timestamp consumation of data (REST / WS)
+    self._symbol = "BTCUSDT"
+    self._interval = "1"
 
     central = QWidget()
     layout = QVBoxLayout(central)
@@ -57,7 +60,7 @@ class MainWindow(QMainWindow):
     self.chart_widget.needs_more_history.connect(self.load_more_history)
 
     # Get Candle Data to Plot into Candlestick Chart
-    candles = self.bybit_client.get_kline_data("BTCUSDT", "3")
+    candles = self.bybit_client.get_kline_data(self._symbol, self._interval)
     if candles:
       self.chart_widget.set_data(candles)
 
@@ -70,7 +73,8 @@ class MainWindow(QMainWindow):
     # Safe Polling to update ever 100ms and not delayed the price
     self.poll_timer.start(100)
 
-    QTimer.singleShot(100, lambda: self.bybit_client.start_ticker_strem())
+    # Same symbol/interval
+    QTimer.singleShot(100, lambda: self.bybit_client.start_ticker_strem(self._symbol, self._interval))
 
   def load_more_history(self):
     logger.info("load_more_history called")
@@ -89,7 +93,7 @@ class MainWindow(QMainWindow):
 
     self._last_history_end_ms = end_ms
     # Process the fetch into a background thread
-    self._candle_history_fetch = _CandleHistoryFetch(self.bybit_client, "BTCUSDT", "3", end_ms)
+    self._candle_history_fetch = _CandleHistoryFetch(self.bybit_client, self._symbol, self._interval, end_ms)
     self._candle_history_fetch.finished_with_data.connect(self._on_history_loaded)
     self._candle_history_fetch.start()
 
@@ -111,3 +115,6 @@ class MainWindow(QMainWindow):
         price = event["data"].get("lastPrice")
         if price:
           self.status_label.setText(f"{event["data"]["symbol"]}: {price}")
+
+      if event["type"] == "kline":
+        self.chart_widget.update_realtime_candle(event["candle"])
